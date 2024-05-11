@@ -42,7 +42,6 @@ public class TimeTable extends JFrame implements ActionListener {
 					if (courses.status(i) > 0) {
 						int originalSlot = courses.slot(i);
 						int[] originalTimeslot = courses.getTimeSlot(i);
-						System.out.println("next to the for statement");
 
 						for (int newSlot = 0; newSlot < Integer.parseInt(field[0].getText()); newSlot++) {
 							if (newSlot != originalSlot) {
@@ -54,12 +53,10 @@ public class TimeTable extends JFrame implements ActionListener {
 									draw();
 									currentClashes = courses.clashesLeft();
 									improvement = true;
-									System.out.println("next to the write statement");
 									writer.write("Slots: " + field[0].getText() + ", Shift: " + field[4].getText() +
 											", Iteration: " + iterations + ", Timeslot Index: " + i + "\n");
 									break;
 								} else {
-									System.out.println("next to the else statement");
 
 									courses.setSlot(i, originalSlot);
 								}
@@ -105,7 +102,7 @@ public class TimeTable extends JFrame implements ActionListener {
 
 		field[0].setText("17");
 		field[1].setText("381");
-		field[2].setText("ute-s-92.stu");
+		field[2].setText("ear-f-83.stu");
 		field[3].setText("1");
 	}
 
