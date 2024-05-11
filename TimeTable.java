@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.io.*;
 
 public class TimeTable extends JFrame implements ActionListener {
 
@@ -9,64 +10,80 @@ public class TimeTable extends JFrame implements ActionListener {
 	private JTextField field[];
 	private CourseArray courses;
 	private Color CRScolor[] = {Color.RED, Color.GREEN, Color.BLACK};
-	
+	private JButton continueButton;
+	private Autoassociator autoassociator;
 	public TimeTable() {
 		super("Dynamic Time Table");
 		setSize(500, 800);
 		setLayout(new FlowLayout());
-		
+
 		screen.setPreferredSize(new Dimension(400, 800));
 		add(screen);
 
 		setTools();
 
 		add(tools);
-		continueButton= new JButton("Continue");
+
+		continueButton = new JButton("Continue");
 		continueButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				scheduling();
 			}
-		})
+		});
 		add(continueButton);
 		setVisible(true);
 	}
-	
 
-	private void scheduling() { 
-    boolean improvement =true; 
-    int iterations=0; 
-     
-    while(improvement) { 
-        improvement = false; 
-        int currentClashes =courses.clashesLeft(); 
-         
-        for(int i = 1; i < courses.length(); i++) { 
-            if(courses.status(i)> 0) { 
-                int originalSlot = courses.slot(i ); 
-                for(int newSlot = 0; newSlot <Integer.parseInt(field[0].getText()); newSlot++) { 
-                    if(newSlot != originalSlot) { 
-                        courses.setSlot(i, newSlot); 
-                        if(courses.clashesLeft()< currentClashes) { 
-                            draw(); 
-                            currentClashes = courses.clashesLeft(); 
-                            improvement =true; 
-                            break;  
-                        } 
-                        else{ 
-                            courses.setSlot(i, originalSlot);  
-                        } 
-                    } 
-                } 
-            } 
-        }
-        iterations++; 
-        if(iterations> Integer.parseInt(field[3].getText())) { 
-            break; 
-        } 
-    } 
-     
-    System.out.println("Continued scheduling with " + iterations + " iterations resulting in " + courses.clashesLeft() + " remaining clashes."); 
-}
+	private void scheduling() {
+		boolean improvement = true;
+		int iterations = 0;
+		String logFileName = "update_log.txt";
+
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName));
+
+			while (improvement) {
+				improvement = false;
+				int currentClashes = courses.clashesLeft();
+
+				for (int i = 1; i < courses.length(); i++) {
+					if (courses.status(i) > 0) {
+						int originalSlot = courses.slot(i);
+						int[] originalTimeslot = courses.getTimeSlot(i);
+
+						for (int newSlot = 0; newSlot < Integer.parseInt(field[0].getText()); newSlot++) {
+							if (newSlot != originalSlot) {
+								courses.setSlot(i, newSlot);
+
+								autoassociator.unitUpdate(originalTimeslot);
+
+								if (courses.clashesLeft() < currentClashes) {
+									draw();
+									currentClashes = courses.clashesLeft();
+									improvement = true;
+
+									writer.write("Slots: " + field[0].getText() + ", Shift: " + field[4].getText() +
+											", Iteration: " + iterations + ", Timeslot Index: " + i + "\n");
+									break;
+								} else {
+									courses.setSlot(i, originalSlot);
+								}
+							}
+						}
+					}
+				}
+				iterations++;
+				if (iterations > Integer.parseInt(field[3].getText())) {
+					break;
+				}
+			}
+			System.out.println("Continued scheduling with " + iterations + " iterations resulting in " + courses.clashesLeft() + " remaining clashes.");
+			writer.close();
+		} catch (IOException e) {
+			System.err.println("Error writing to log file: " + e.getMessage());
+		}
+
+	}
 
 	public void setTools() {
 		String capField[] = {"Slots:", "Courses:", "Clash File:", "Iters:", "Shift:"};
