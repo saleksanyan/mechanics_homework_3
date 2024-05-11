@@ -14,23 +14,15 @@ public class TimeTable extends JFrame implements ActionListener {
 	private Autoassociator autoassociator;
 	public TimeTable() {
 		super("Dynamic Time Table");
-		setSize(500, 800);
-		setLayout(new FlowLayout());
+		setSize(700, 800);
+		setLayout(new BorderLayout());
 
 		screen.setPreferredSize(new Dimension(400, 800));
-		add(screen);
+		add(screen, BorderLayout.WEST);
 
 		setTools();
+		add(tools, BorderLayout.EAST);
 
-		add(tools);
-
-		continueButton = new JButton("Continue");
-		continueButton.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				scheduling();
-			}
-		});
-		add(continueButton);
 		setVisible(true);
 	}
 
@@ -42,7 +34,7 @@ public class TimeTable extends JFrame implements ActionListener {
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName));
 
-			while (improvement) {
+			while (improvement && courses != null && autoassociator != null) {
 				improvement = false;
 				int currentClashes = courses.clashesLeft();
 
@@ -50,6 +42,7 @@ public class TimeTable extends JFrame implements ActionListener {
 					if (courses.status(i) > 0) {
 						int originalSlot = courses.slot(i);
 						int[] originalTimeslot = courses.getTimeSlot(i);
+						System.out.println("next to the for statement");
 
 						for (int newSlot = 0; newSlot < Integer.parseInt(field[0].getText()); newSlot++) {
 							if (newSlot != originalSlot) {
@@ -61,11 +54,13 @@ public class TimeTable extends JFrame implements ActionListener {
 									draw();
 									currentClashes = courses.clashesLeft();
 									improvement = true;
-
+									System.out.println("next to the write statement");
 									writer.write("Slots: " + field[0].getText() + ", Shift: " + field[4].getText() +
 											", Iteration: " + iterations + ", Timeslot Index: " + i + "\n");
 									break;
 								} else {
+									System.out.println("next to the else statement");
+
 									courses.setSlot(i, originalSlot);
 								}
 							}
@@ -88,30 +83,32 @@ public class TimeTable extends JFrame implements ActionListener {
 	public void setTools() {
 		String capField[] = {"Slots:", "Courses:", "Clash File:", "Iters:", "Shift:"};
 		field = new JTextField[capField.length];
-		
-		String capButton[] = {"Load", "Start", "Step", "Print", "Exit"};
+
+		String capButton[] = {"Load", "Start", "Step", "Print", "Continue", "Exit"};
 		tool = new JButton[capButton.length];
-		
-		tools.setLayout(new GridLayout(2 * capField.length + capButton.length, 1));
-		
+
+		tools.setLayout(new GridLayout(capField.length + capButton.length, 1));
+
 		for (int i = 0; i < field.length; i++) {
-			tools.add(new JLabel(capField[i]));
-			field[i] = new JTextField(5);
-			tools.add(field[i]);
+			JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			panel.add(new JLabel(capField[i]));
+			field[i] = new JTextField(10);
+			panel.add(field[i]);
+			tools.add(panel);
 		}
-		
+
 		for (int i = 0; i < tool.length; i++) {
 			tool[i] = new JButton(capButton[i]);
 			tool[i].addActionListener(this);
 			tools.add(tool[i]);
 		}
-		
+
 		field[0].setText("17");
 		field[1].setText("381");
-		field[2].setText("ear-f-83.stu");
+		field[2].setText("ute-s-92.stu");
 		field[3].setText("1");
 	}
-	
+
 	public void draw() {
 		Graphics g = screen.getGraphics();
 		int width = Integer.parseInt(field[0].getText()) * 10;
@@ -166,6 +163,9 @@ public class TimeTable extends JFrame implements ActionListener {
 				System.out.println(i + "\t" + courses.slot(i) + "\t" + courses.status(i));
 			break;
 		case 4:
+			scheduling();
+			break;
+		case 5:
 			System.exit(0);
 		}
 	}
