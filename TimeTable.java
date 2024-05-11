@@ -125,7 +125,8 @@ public class TimeTable extends JFrame implements ActionListener {
 	
 	public void actionPerformed(ActionEvent click) {
 		int min, step, clashes;
-		
+		String logFileName = "update_log.txt";
+
 		switch (getButtonIndex((JButton) click.getSource())) {
 		case 0:
 			int slots = Integer.parseInt(field[0].getText());
@@ -155,9 +156,17 @@ public class TimeTable extends JFrame implements ActionListener {
 			draw();
 			break;
 		case 3:
-			System.out.println("Exam\tSlot\tClashes");
-			for (int i = 1; i < courses.length(); i++)
-				System.out.println(i + "\t" + courses.slot(i) + "\t" + courses.status(i));
+			try{
+				BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName));
+				System.out.println("Exam\tSlot\tClashes");
+				for (int i = 1; i < courses.length(); i++) {
+					writer.write("Exam: " + i + " Slot: " + courses.slot(i) + " Clashes: " + courses.status(i)+"\n");
+					System.out.println(i + "\t" + courses.slot(i) + "\t" + courses.status(i));
+				}
+				writer.close();
+			} catch (IOException e) {
+				System.err.println("Error writing to log file: " + e.getMessage());
+			}
 			break;
 		case 4:
 			scheduling();
